@@ -51,7 +51,7 @@ res <- surface_map(df, study_area, type = "prevalence", outcome = rdt_pos, clust
 | `outcome` | | Unquoted column: 0/1 (prevalence), non-negative count (incidence, rate), numeric (mean) |
 | `exposure` | `NULL` | Unquoted follow-up time or denominator per row; required for incidence and rate |
 | `clustered`, `cluster` | `TRUE`, `cluster` | Whether rows are grouped in clusters, and the cluster-id column |
-| `lon`, `lat` | `lon`, `lat` | Unquoted coordinate columns, in `data_crs` |
+| `lon`, `lat` | `lon`, `lat` | Unquoted coordinate columns, in `data_crs`. Not needed if `dat` is an `sf` object: coordinates then come from its geometry (centroids if not points) in its own CRS, and `data_crs` is ignored |
 | `cluster_xy` | `"first"` | Cluster coordinate: first non-missing, or `"mean"` |
 | `per`, `unit`, `legend_name` | by type | Legend multiplier (100, 1000, 10000, 1), wording, full title |
 | `shrink` | `TRUE` | `FALSE` uses raw cluster values (ignored if unclustered) |

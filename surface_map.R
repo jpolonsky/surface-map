@@ -36,7 +36,10 @@
 ##   exposure   unquoted column of follow-up time or denominator per row; required
 ##              for incidence and rate, ignored otherwise. Rows with exposure <= 0
 ##              are dropped from the model.
-##   lon, lat   unquoted coordinate columns, in `data_crs` (default WGS84).
+##   lon, lat   unquoted coordinate columns, in `data_crs` (default WGS84). If `dat`
+##              is an sf object they are not needed: coordinates come from its
+##              geometry (centroids if not points), in the object's own CRS, and
+##              `data_crs` is ignored.
 ##   cluster_xy "first" takes each cluster's first non-missing coordinate; "mean"
 ##              takes the mean of its coordinates. Ignored if clustered = FALSE.
 ##   per        multiplier for the legend scale. Defaults: prevalence 100 (percent),
@@ -100,6 +103,15 @@ surface_map <- function(
  type <- match.arg(type)
  cluster_xy <- match.arg(cluster_xy)
  is_rate <- type %in% c("incidence", "rate")
+ is_sf <- inherits(dat, "sf")
+ if (is_sf) {
+  geom <- st_geometry(dat)
+  if (is.na(st_crs(geom))) stop("`dat` is an sf object with no CRS.", call. = FALSE)
+  if (!all(st_geometry_type(geom) %in% "POINT")) geom <- suppressWarnings(st_centroid(geom))
+  sf_xy <- st_coordinates(geom)[, 1:2, drop = FALSE]
+  data_crs <- st_crs(geom)
+  dat <- st_drop_geometry(dat) |> mutate(.sf_x = sf_xy[, 1], .sf_y = sf_xy[, 2])
+ }
  smooth_weights <-
   if (is.null(smooth_weights)) {
    if (clustered) "n" else if (is_rate) "exposure" else "none"
@@ -135,8 +147,8 @@ surface_map <- function(
    .cl = if (clustered) factor({{ cluster }}) else factor(row_number()),
    .y = as.numeric({{ outcome }}),
    .e = if (is_rate) as.numeric(!!exposure_quo) else NA_real_,
-   .lon = {{ lon }},
-   .lat = {{ lat }}
+   .lon = if (is_sf) .sf_x else {{ lon }},
+   .lat = if (is_sf) .sf_y else {{ lat }}
   )
 
  df_model <- df |> filter(!is.na(.cl), !is.na(.y), if (is_rate) !is.na(.e) & .e > 0 else TRUE) |> mutate(.cl = droplevels(.cl))
