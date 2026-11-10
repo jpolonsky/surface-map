@@ -55,6 +55,7 @@ res <- surface_map(df, study_area, type = "prevalence", outcome = rdt_pos, clust
 | `cluster_xy` | `"first"` | Cluster coordinate: first non-missing, or `"mean"` |
 | `per`, `unit`, `legend_name` | by type | Legend multiplier (100, 1000, 10000, 1), wording, full title |
 | `shrink` | `TRUE` | `FALSE` uses raw cluster values (ignored if unclustered) |
+| `gam_method` | `"REML"` | Smoothing-parameter method for the shrinkage model; `"GCV.Cp"` is mgcv's own default and reproduces scripts that did not set one. `"REML"` usually estimates more between-cluster variance, so the surface is less shrunk |
 | `smooth_weights` | by data | `"n"`, `"exposure"` or `"none"` |
 | `sigma` | `NULL` | Kernel bandwidth in `work_crs` units (metres for 3857); `NULL` = cross-validated |
 | `data_crs`, `work_crs` | 4326, 3857 | Coordinate CRS; projected CRS used for smoothing |

@@ -48,6 +48,9 @@
 ##              there is nothing to shrink). Shrinkage also falls back to raw
 ##              values, with a message, if the model cannot be fitted (fewer than
 ##              two clusters, or a constant outcome).
+##   gam_method smoothing-parameter method passed to mgcv::gam() for the shrinkage
+##              model. "REML" (default) is recommended for random effects; "GCV.Cp"
+##              is mgcv's own default and reproduces older scripts that did not set one.
 ##   smooth_weights  "n" (rows per cluster), "exposure" (summed exposure; incidence
 ##              and rate only) or "none". Default: "n" if clustered; if unclustered,
 ##              "exposure" for incidence/rate and "none" otherwise.
@@ -87,7 +90,7 @@ surface_map <- function(
  clustered = TRUE, cluster = cluster, lon = lon, lat = lat,
  cluster_xy = c("first", "mean"),
  per = NULL, unit = NULL, legend_name = NULL,
- shrink = TRUE, smooth_weights = NULL, sigma = NULL,
+ shrink = TRUE, gam_method = "REML", smooth_weights = NULL, sigma = NULL,
  data_crs = 4326, work_crs = 3857,
  palette = "viridis", reverse_palette = FALSE,
  zero_floor = TRUE, fill_limits = NULL,
@@ -162,9 +165,9 @@ surface_map <- function(
  if (can_fit) {
   fit <- tryCatch(
    if (is_rate) {
-    gam(.y ~ s(.cl, bs = "re") + offset(log(.e)), data = df_model, family = poisson(), method = "REML")
+    gam(.y ~ s(.cl, bs = "re") + offset(log(.e)), data = df_model, family = poisson(), method = gam_method)
    } else {
-    gam(.y ~ s(.cl, bs = "re"), data = df_model, family = if (type == "prevalence") binomial() else gaussian(), method = "REML")
+    gam(.y ~ s(.cl, bs = "re"), data = df_model, family = if (type == "prevalence") binomial() else gaussian(), method = gam_method)
    },
    error = \(e) {
     message("surface_map(): shrinkage model failed (", conditionMessage(e), "); using raw cluster values.")
